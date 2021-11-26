@@ -5,7 +5,7 @@ from autoencoder import Autoencoder
 
 LEARNING_RATE = 0.0005
 BATCH_SIZE = 32
-EPOCHS = 20
+EPOCHS = 100
 
 
 def load_mnist():
@@ -33,7 +33,5 @@ def train(x_train, learning_rate, batch_size, epochs):
 
 if __name__ == "__main__":
     x_train, _, _, _ = load_mnist()
-    autoencoder = train(x_train[:500], LEARNING_RATE, BATCH_SIZE, EPOCHS)
+    autoencoder = train(x_train[:10000], LEARNING_RATE, BATCH_SIZE, EPOCHS)
     autoencoder.save("model")
-    autoencoder2 = Autoencoder.load("model")
-    autoencoder2.summary()
