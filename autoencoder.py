@@ -1,3 +1,6 @@
+import os
+import pickle
+
 import numpy as np
 from tensorflow.keras import Model
 from tensorflow.keras import backend as K
@@ -54,6 +57,25 @@ class Autoencoder:
         self.model.fit(
             x_train, x_train, batch_size=batch_size, epochs=num_epochs, shuffle=True
         )
+
+    def save(self, save_folder="."):
+        self._create_folder_if_missing(save_folder)
+        self._save_parameters(save_folder)
+        self._save_weights(save_folder)
+
+    def load_weights(self, weights_path):
+        self.model.load_weights(weights_path)
+
+    @classmethod
+    def load(cls, save_folder="."):
+        parameters_path = os.path.join(save_folder, "parameters.pkl")
+        with open(parameters_path, "rb") as f:
+            parameters = pickle.load(f)
+        autoencoder = Autoencoder(*parameters)
+
+        weights_path = os.path.join(save_folder, "weights.h5")
+        autoencoder.load_weights(weights_path)
+        return autoencoder
 
     def _build(self):
         self._build_encoder()
@@ -161,6 +183,26 @@ class Autoencoder:
         model_input = self._model_input
         model_output = self.decoder(self.encoder(model_input))
         self.model = Model(model_input, model_output, name="autoencoder")
+
+    def _create_folder_if_missing(self, folder):
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
+    def _save_parameters(self, save_folder):
+        parameters = [
+            self.input_shape,
+            self.conv_filters,
+            self.conv_kernels,
+            self.conv_strides,
+            self.latent_space_dim,
+        ]
+        save_path = os.path.join(save_folder, "parameters.pkl")
+        with open(save_path, "wb") as f:
+            pickle.dump(parameters, f)
+
+    def _save_weights(self, save_folder):
+        save_path = os.path.join(save_folder, "weights.h5")
+        self.model.save_weights(save_path)
 
 
 if __name__ == "__main__":
